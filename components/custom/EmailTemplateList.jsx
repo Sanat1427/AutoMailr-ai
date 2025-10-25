@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { useConvex, useMutation } from 'convex/react';
 import { useUserDetail } from '@/app/provider';
 import { api } from '@/convex/_generated/api';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Trash2, PlusCircle } from 'lucide-react';
 
 function EmailTemplateList() {
   const [emailList, setEmailList] = useState([]);
@@ -44,8 +44,18 @@ function EmailTemplateList() {
 
   return (
     <div>
-      <h2 className="font-bold text-xl text-primary mt-6">Workspace</h2>
+      {/* Header Section */}
+      <div className="flex justify-between items-center mt-6">
+        <h2 className="font-bold text-xl text-primary">Workspace</h2>
+        <Link href="/dashboard/create">
+          <Button className="flex items-center gap-2">
+            <PlusCircle className="h-5 w-5" />
+            New Template
+          </Button>
+        </Link>
+      </div>
 
+      {/* If no templates exist */}
       {emailList?.length === 0 ? (
         <div className="flex justify-center mt-7 flex-col items-center">
           <Image src="/email.png" alt="email" height={250} width={250} />
@@ -54,6 +64,7 @@ function EmailTemplateList() {
           </Link>
         </div>
       ) : (
+        /* Template grid */
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-5">
           {emailList.map((item) => (
             <div
