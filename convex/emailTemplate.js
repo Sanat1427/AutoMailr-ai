@@ -83,3 +83,21 @@ export const GetAllUserTemplate = query({
     return result;
   },
 });
+export const DeleteTemplate = mutation({
+  args: { tid: v.string() },
+  handler: async (ctx, args) => {
+    const result = await ctx.db
+      .query("emailTemplates")
+      .filter((q) => q.eq(q.field("tid"), args.tid))
+      .collect();
+
+    if (!result || result.length === 0) {
+      console.error(`No template found for tid: ${args.tid}`);
+      return { error: "Template not found" };
+    }
+
+    const docId = result[0]._id;
+    await ctx.db.delete(docId);
+    return { success: true };
+  },
+});

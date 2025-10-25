@@ -32,35 +32,48 @@ function AIInputBox() {
 
       if (!raw) throw new Error("AI returned empty data");
 
-      // 1️⃣ Remove code block and trim
+      // 🧹 Step 1: Clean raw AI text
       let cleaned = raw.replace(/```json|```/g, "").trim();
-
-      // 2️⃣ Merge numbers that AI added spaces in
       cleaned = cleaned.replace(/(\d)\s+(\d)/g, "$1$2");
-
-      // 3️⃣ Trim spaces from keys
       cleaned = cleaned.replace(/"(\s+)?(\w+)(\s+)?"\s*:/g, '"$2":');
 
       let cleanDesign;
       try {
-        // 4️⃣ Parse using JSON5 (handles trailing commas, etc.)
+        // 🧩 Step 2: Parse safely
         cleanDesign = JSON5.parse(cleaned);
-
-        // 5️⃣ Ensure it's an array
         if (!Array.isArray(cleanDesign)) cleanDesign = [cleanDesign];
 
-        // 6️⃣ Filter out invalid objects
-        cleanDesign = cleanDesign.filter((item) => item && typeof item === "object");
+        // 🧠 Step 3: Filter and normalize textarea → content
+        cleanDesign = cleanDesign
+          .filter((item) => item && typeof item === "object")
+          .map((block) => {
+            // Handle nested "0" objects (columns)
+            Object.keys(block).forEach((key) => {
+              const inner = block[key];
+              if (inner && typeof inner === "object" && inner.textarea) {
+                inner.content = inner.textarea;
+                delete inner.textarea;
+              }
+            });
+
+            // Handle top-level textarea
+            if (block.textarea) {
+              block.content = block.textarea;
+              delete block.textarea;
+            }
+
+            return block;
+          });
 
         if (cleanDesign.length === 0) {
           throw new Error("AI returned empty or invalid design array");
         }
       } catch (err) {
-        console.error("Failed to parse AI design JSON:", err);
+        console.error("❌ Failed to parse AI design JSON:", err);
         return;
       }
 
-      // Save template to Convex
+      // 💾 Step 4: Save template to Convex
       await SaveTemplate({
         tid,
         design: cleanDesign,
@@ -68,9 +81,9 @@ function AIInputBox() {
         description: userInput,
       });
 
-      console.log("Template saved successfully!");
+      console.log("✅ Template saved successfully!");
 
-      // Navigate to editor
+      // 🔄 Step 5: Navigate to editor
       router.push("/editor/" + tid);
     } catch (e) {
       console.error("Error generating template:", e);
