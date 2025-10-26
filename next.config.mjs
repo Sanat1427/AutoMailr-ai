@@ -4,19 +4,18 @@ const nextConfig = {
     domains: ['lh3.googleusercontent.com'], // needed for Google profile images
   },
 
-  // ✅ Add headers to relax COOP/COEP so Google popup can close itself
   async headers() {
     return [
       {
-        source: '/(.*)', // Apply globally (or narrow this to /auth/*)
+        source: '/(.*)', // applies globally — or narrow to /auth/(.*)
         headers: [
           {
             key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups', // ✅ allows OAuth popups
+            value: 'unsafe-none', // ✅ disables isolation so popup can close
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
-            value: 'unsafe-none', // ✅ removes isolation blocking
+            value: 'unsafe-none', // ✅ avoids COEP-related blocks
           },
         ],
       },
